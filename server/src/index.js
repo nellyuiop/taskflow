@@ -2,6 +2,8 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
+import projectRoutes from "./routes/projectRoutes.js";
+import taskRoutes from "./routes/taskRoutes.js"; // importing task routes
 
 // 1. Load environment var
 dotenv.config();
@@ -13,7 +15,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 4. basic test route
+app.use("/api/projects", projectRoutes);
+app.use("/api", taskRoutes); // Mounted at /api so the specific paths inside taskRoutes work
 app.get("/", (req, res) => {
   res.send("TaskFlow API is running!");
 });
@@ -32,3 +35,8 @@ mongoose
   .catch((error) => {
     console.log("❌ Error connecting to MongoDB:", error.message);
   });
+// Debug logger
+app.use((req, res, next) => {
+  console.log(`Incoming request: ${req.method} ${req.url}`);
+  next();
+});
