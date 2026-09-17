@@ -41,3 +41,31 @@ TaskFlow is a mini Project & Task Management Platform. This repository currently
    ```bash
    npm run dev
    ```
+   ## API Endpoints
+
+### Authentication
+
+- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/login` - Login and receive a JWT token
+
+### Projects (Protected - Requires JWT)
+
+- `GET /api/projects` - Get all projects
+- `POST /api/projects` - Create a new project
+- `PUT /api/projects/:id` - Update a project
+- `DELETE /api/projects/:id` - Delete a project
+
+### Tasks (Protected - Requires JWT)
+
+- `GET /api/projects/:projectId/tasks` - Get tasks for a specific project
+- `POST /api/tasks` - Create a new task
+- `PUT /api/tasks/:id` - Update a task
+- `DELETE /api/tasks/:id` - Delete a task
+
+## Postman Collection
+
+A complete Postman collection containing all API requests (with authentication setup) can be found in the `docs` folder: `TaskFlow_Week1_Postman.json`.
+
+## Database Schema
+
+The database schema diagram for this project is available in the `docs` folder.
