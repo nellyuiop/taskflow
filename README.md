@@ -1,9 +1,22 @@
-# TaskFlow
+# TaskFlow API
 
-Full-Stack Web Development Internship Project
+Full-Stack Web Development Internship Project (Week 1)
 
-## Week 1, Day 2: Database Design
+## Overview
 
-Here is the database schema for the TaskFlow application.
+TaskFlow is a mini Project & Task Management Platform. This repository currently contains the backend REST API, built with Node.js, Express, and MongoDB.
 
-![TaskFlow Database Schema](./docs/taskflow-schema.png)
+## Tech Stack
+
+- Backend: Node.js, Express.js
+- Database: MongoDB (via Mongoose)
+- Authentication: JWT (JSON Web Tokens) and bcrypt
+- Tools: Git, Postman, VS Code
+
+## How to Run Locally
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/nellyuiop/taskflow.git
+   cd taskflow/server
+   ```
