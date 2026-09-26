@@ -1,16 +1,25 @@
-import WelcomeCard from "./components/WelcomeCard";
-import DataFetcher from "./components/DataFetcher"; // Import it
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
+import Dashboard from "./pages/Dashboard";
+import Projects from "./pages/Projects";
+import Tasks from "./pages/Tasks";
+import Login from "./pages/Login";
 
 function App() {
   return (
-    <div style={{ fontFamily: "sans-serif", padding: "20px" }}>
-      <h1>TaskFlow Admin Panel</h1>
+    <BrowserRouter>
+      <Routes>
+        {/* Public Route */}
+        <Route path="/login" element={<Login />} />
 
-      <WelcomeCard name="Nelly" role="Administrator" />
-
-      {/* Add the new component here */}
-      <DataFetcher />
-    </div>
+        {/* Protected Routes wrapped in the Layout */}
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="projects" element={<Projects />} />
+          <Route path="tasks" element={<Tasks />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 

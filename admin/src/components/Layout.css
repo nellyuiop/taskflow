@@ -1,0 +1,38 @@
+.layout-container {
+  display: flex;
+  height: 100vh;
+  font-family: "Times New Roman", Times, serif;
+}
+
+.sidebar {
+  width: 200px;
+  background: #1e5142;
+  color: rgb(209, 235, 229);
+  padding: 20px;
+}
+
+.sidebar a {
+  color: rgb(221, 235, 232);
+  text-decoration: none;
+  display: block;
+  padding: 15px 0;
+}
+
+.sidebar a:hover {
+  background: #1e5142;
+}
+
+.main-area {
+  flex: 1;
+  background: #ffffff;
+}
+
+.topbar {
+  background: white;
+  padding: 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.content {
+  padding: 20px;
+}
