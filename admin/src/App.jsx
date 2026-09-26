@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import Tasks from "./pages/Tasks";
 import Login from "./pages/Login";
+import ProtectedRoute from "./components/ProtectedRoute"; // Import the bouncer
 
 function App() {
   return (
@@ -12,11 +13,13 @@ function App() {
         {/* Public Route */}
         <Route path="/login" element={<Login />} />
 
-        {/* Protected Routes wrapped in the Layout */}
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="projects" element={<Projects />} />
-          <Route path="tasks" element={<Tasks />} />
+        {/* Protected Routes wrapped in the Bouncer AND the Layout */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="projects" element={<Projects />} />
+            <Route path="tasks" element={<Tasks />} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>
