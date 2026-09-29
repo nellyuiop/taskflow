@@ -24,7 +24,7 @@
 }
 
 .btn-primary:hover {
-  background-color: #374762;
+  background-color: #27364a; /* Darker on hover */
 }
 
 .btn-secondary {
@@ -83,7 +83,7 @@
 .input-group input:focus,
 .input-group textarea:focus {
   border-color: #374762;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(55, 71, 98, 0.1);
 }
 
 /* TABLE CARD */
@@ -141,16 +141,16 @@ tbody tr:hover {
 
 .btn-edit {
   background-color: #c7d7fe;
-  color: #ffffff;
+  color: #1e3a8a; /* Dark blue text for contrast */
 }
 
 .btn-edit:hover {
-  background-color: #c7d7fe;
+  background-color: #a5c0fd;
 }
 
 .btn-delete {
   background-color: #e8c4c4;
-  color: #b91c1cbd;
+  color: #b91c1c;
 }
 
 .btn-delete:hover {

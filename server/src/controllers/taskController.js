@@ -1,7 +1,15 @@
 import Task from "../models/Task.js";
 
-// @desc    Get tasks for a specific project
-// @route   GET /api/projects/:projectId/tasks
+// @desc    Get ALL tasks (For the Admin Panel)
+// @route   GET /api/tasks
+export const getAllTasks = async (req, res) => {
+  try {
+    const tasks = await Task.find();
+    res.status(200).json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error" });
+  }
+};
 export const getTasks = async (req, res) => {
   try {
     const tasks = await Task.find({ projectId: req.params.projectId });

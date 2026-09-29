@@ -1,4 +1,264 @@
+import { useState, useEffect } from "react";
+import axios from "axios";
+import "./Tasks.css"; // Use the same CSS as Projects
+
 function Tasks() {
-  return <h1>Tasks Management</h1>;
+  const [tasks, setTasks] = useState([]);
+  const [projects, setProjects] = useState([]); // We need this for the dropdown
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const [showForm, setShowForm] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [status, setStatus] = useState("Todo");
+  const [projectId, setProjectId] = useState("");
+  const [formError, setFormError] = useState("");
+  const [editingId, setEditingId] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+
+        // Fetch both tasks and projects (so we can display the project name and populate the dropdown)
+        const [tasksRes, projectsRes] = await Promise.all([
+          axios.get("http://127.0.0.1:5001/api/tasks", config),
+          axios.get("http://127.0.0.1:5001/api/projects", config),
+        ]);
+
+        setTasks(tasksRes.data);
+        setProjects(projectsRes.data);
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to fetch data.");
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormError("");
+    try {
+      const token = localStorage.getItem("token");
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+
+      if (editingId) {
+        const response = await axios.put(
+          `http://127.0.0.1:5001/api/tasks/${editingId}`,
+          { title, description, status, projectId },
+          config,
+        );
+        setTasks(tasks.map((t) => (t._id === editingId ? response.data : t)));
+      } else {
+        const response = await axios.post(
+          "http://127.0.0.1:5001/api/tasks",
+          { title, description, status, projectId },
+          config,
+        );
+        setTasks([...tasks, response.data]);
+      }
+      closeForm();
+    } catch (err) {
+      setFormError(err.response?.data?.message || "Action failed.");
+    }
+  };
+
+  const handleEditClick = (task) => {
+    setEditingId(task._id);
+    setTitle(task.title);
+    setDescription(task.description);
+    setStatus(task.status);
+    setProjectId(task.projectId);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this task?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://127.0.0.1:5001/api/tasks/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setTasks(tasks.filter((t) => t._id !== id));
+    } catch (err) {
+      alert("Failed to delete task.");
+    }
+  };
+
+  const closeForm = () => {
+    setShowForm(false);
+    setEditingId(null);
+    setTitle("");
+    setDescription("");
+    setStatus("Todo");
+    setProjectId("");
+    setFormError("");
+  };
+
+  // Helper to find the project name for a specific task
+  const getProjectName = (id) => {
+    const project = projects.find((p) => p._id === id);
+    return project ? project.name : "Unknown Project";
+  };
+
+  if (loading) return <p style={{ padding: "40px" }}>Loading tasks...</p>;
+  if (error) return <p style={{ padding: "40px", color: "red" }}>{error}</p>;
+
+  return (
+    <div>
+      <div className="page-header">
+        <h2>Tasks Management</h2>
+        <button
+          className={showForm ? "btn-secondary" : "btn-primary"}
+          onClick={() => (showForm ? closeForm() : setShowForm(true))}
+        >
+          {showForm ? "Cancel" : "+ New Task"}
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="form-card">
+          <h3>{editingId ? "Edit Task" : "Create New Task"}</h3>
+          {formError && (
+            <p style={{ color: "#ef4444", marginBottom: "15px" }}>
+              {formError}
+            </p>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <div className="input-group">
+              <label>Task Title</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+              />
+            </div>
+            <div className="input-group">
+              <label>Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+              />
+            </div>
+            <div className="input-group">
+              <label>Status</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  borderRadius: "8px",
+                  border: "1px solid #d1d5db",
+                }}
+              >
+                <option value="Todo">Todo</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Done">Done</option>
+              </select>
+            </div>
+            <div className="input-group">
+              <label>Assign to Project</label>
+              <select
+                value={projectId}
+                onChange={(e) => setProjectId(e.target.value)}
+                required
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  borderRadius: "8px",
+                  border: "1px solid #d1d5db",
+                }}
+              >
+                <option value="">-- Select a Project --</option>
+                {projects.map((p) => (
+                  <option key={p._id} value={p._id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button type="submit" className="btn-primary">
+              {editingId ? "Update Task" : "Save Task"}
+            </button>
+          </form>
+        </div>
+      )}
+
+      <div className="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Task Title</th>
+              <th>Project</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tasks.map((task) => (
+              <tr key={task._id}>
+                <td style={{ fontWeight: "500", color: "#111827" }}>
+                  {task.title}
+                </td>
+                <td>{getProjectName(task.projectId)}</td>
+                <td>
+                  <span
+                    style={{
+                      padding: "4px 8px",
+                      borderRadius: "4px",
+                      fontSize: "0.8rem",
+                      fontWeight: "600",
+                      backgroundColor:
+                        task.status === "Done"
+                          ? "#d1fae5"
+                          : task.status === "In Progress"
+                            ? "#fef3c7"
+                            : "#e5e7eb",
+                      color:
+                        task.status === "Done"
+                          ? "#065f46"
+                          : task.status === "In Progress"
+                            ? "#92400e"
+                            : "#374151",
+                    }}
+                  >
+                    {task.status}
+                  </span>
+                </td>
+                <td>
+                  <button
+                    className="btn-action btn-edit"
+                    onClick={() => handleEditClick(task)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="btn-action btn-delete"
+                    onClick={() => handleDelete(task._id)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {tasks.length === 0 && (
+          <div className="empty-state">
+            No tasks found. Create one to get started!
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
+
 export default Tasks;
