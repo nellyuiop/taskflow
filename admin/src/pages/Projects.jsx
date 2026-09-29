@@ -1,18 +1,17 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import "./Projects.css"; // Import the new styles
 
 function Projects() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  // State for the form
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [formError, setFormError] = useState("");
+  const [editingId, setEditingId] = useState(null);
 
-  // Fetch projects from the backend
   useEffect(() => {
     const fetchProjects = async () => {
       try {
@@ -30,165 +29,154 @@ function Projects() {
     fetchProjects();
   }, []);
 
-  // Handle creating a new project
-  const handleCreateProject = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError("");
-
     try {
       const token = localStorage.getItem("token");
+      const config = { headers: { Authorization: `Bearer ${token}` } };
 
-      // Send POST request to backend
-      const response = await axios.post(
-        "http://127.0.0.1:5001/api/projects",
-        { name, description },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-
-      // Add the new project to the existing list instantly (no refresh needed!)
-      setProjects([...projects, response.data]);
-
-      // Clear the form and close it
-      setName("");
-      setDescription("");
-      setShowForm(false);
+      if (editingId) {
+        const response = await axios.put(
+          `http://127.0.0.1:5001/api/projects/${editingId}`,
+          { name, description },
+          config,
+        );
+        setProjects(
+          projects.map((p) => (p._id === editingId ? response.data : p)),
+        );
+      } else {
+        const response = await axios.post(
+          "http://127.0.0.1:5001/api/projects",
+          { name, description },
+          config,
+        );
+        setProjects([...projects, response.data]);
+      }
+      closeForm();
     } catch (err) {
-      setFormError(err.response?.data?.message || "Failed to create project.");
+      setFormError(err.response?.data?.message || "Action failed.");
     }
   };
 
-  if (loading) return <p>Loading projects...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  const handleEditClick = (project) => {
+    setEditingId(project._id);
+    setName(project.name);
+    setDescription(project.description);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this project?"))
+      return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://127.0.0.1:5001/api/projects/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProjects(projects.filter((p) => p._id !== id));
+    } catch (err) {
+      alert("Failed to delete project.");
+    }
+  };
+
+  const closeForm = () => {
+    setShowForm(false);
+    setEditingId(null);
+    setName("");
+    setDescription("");
+    setFormError("");
+  };
+
+  if (loading) return <p style={{ padding: "40px" }}>Loading projects...</p>;
+  if (error) return <p style={{ padding: "40px", color: "red" }}>{error}</p>;
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
+      <div className="page-header">
         <h2>Projects Management</h2>
         <button
-          onClick={() => setShowForm(!showForm)}
-          style={{
-            padding: "10px 15px",
-            background: "#3b82f6",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
+          className={showForm ? "btn-secondary" : "btn-primary"}
+          onClick={() => (showForm ? closeForm() : setShowForm(true))}
         >
           {showForm ? "Cancel" : "+ New Project"}
         </button>
       </div>
 
-      {/* CREATE PROJECT FORM */}
       {showForm && (
-        <div
-          style={{
-            background: "#f9f9f9",
-            padding: "20px",
-            borderRadius: "8px",
-            marginTop: "20px",
-            border: "1px solid #ddd",
-          }}
-        >
-          <h3>Create New Project</h3>
-          {formError && <p style={{ color: "red" }}>{formError}</p>}
+        <div className="form-card">
+          <h3>{editingId ? "Edit Project" : "Create New Project"}</h3>
+          {formError && (
+            <p style={{ color: "#ef4444", marginBottom: "15px" }}>
+              {formError}
+            </p>
+          )}
 
-          <form onSubmit={handleCreateProject}>
-            <div style={{ marginBottom: "10px" }}>
-              <label style={{ display: "block", marginBottom: "5px" }}>
-                Project Name
-              </label>
+          <form onSubmit={handleSubmit}>
+            <div className="input-group">
+              <label>Project Name</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  borderRadius: "4px",
-                  border: "1px solid #ccc",
-                }}
               />
             </div>
-            <div style={{ marginBottom: "10px" }}>
-              <label style={{ display: "block", marginBottom: "5px" }}>
-                Description
-              </label>
+            <div className="input-group">
+              <label>Description</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 required
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  borderRadius: "4px",
-                  border: "1px solid #ccc",
-                  minHeight: "60px",
-                }}
               />
             </div>
-            <button
-              type="submit"
-              style={{
-                padding: "10px 15px",
-                background: "#10b981",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
-            >
-              Save Project
+            <button type="submit" className="btn-primary">
+              {editingId ? "Update Project" : "Save Project"}
             </button>
           </form>
         </div>
       )}
 
-      {/* PROJECTS TABLE */}
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          marginTop: "20px",
-          background: "white",
-        }}
-      >
-        <thead>
-          <tr style={{ background: "#f4f4f4", textAlign: "left" }}>
-            <th style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>
-              Project Name
-            </th>
-            <th style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>
-              Description
-            </th>
-            <th style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>
-              Created At
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {projects.map((project) => (
-            <tr key={project._id}>
-              <td style={{ padding: "10px", borderBottom: "1px solid #eee" }}>
-                {project.name}
-              </td>
-              <td style={{ padding: "10px", borderBottom: "1px solid #eee" }}>
-                {project.description}
-              </td>
-              <td style={{ padding: "10px", borderBottom: "1px solid #eee" }}>
-                {new Date(project.createdAt).toLocaleDateString()}
-              </td>
+      <div className="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Project Name</th>
+              <th>Description</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {projects.map((project) => (
+              <tr key={project._id}>
+                <td style={{ fontWeight: "500", color: "#111827" }}>
+                  {project.name}
+                </td>
+                <td>{project.description}</td>
+                <td>
+                  <button
+                    className="btn-action btn-edit"
+                    onClick={() => handleEditClick(project)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="btn-action btn-delete"
+                    onClick={() => handleDelete(project._id)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {projects.length === 0 && (
+          <div className="empty-state">
+            No projects found. Create one to get started!
+          </div>
+        )}
+      </div>
     </div>
   );
 }
