@@ -1,10 +1,10 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/Dashboard"; // Keep this just in case you want it later
 import Projects from "./pages/Projects";
 import Tasks from "./pages/Tasks";
 import Login from "./pages/Login";
-import ProtectedRoute from "./components/ProtectedRoute"; // Import the bouncer
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -13,10 +13,11 @@ function App() {
         {/* Public Route */}
         <Route path="/login" element={<Login />} />
 
-        {/* Protected Routes wrapped in the Bouncer AND the Layout */}
+        {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Layout />}>
-            <Route index element={<Dashboard />} />
+            {/* Redirect the root URL directly to /projects */}
+            <Route index element={<Navigate to="/projects" replace />} />
             <Route path="projects" element={<Projects />} />
             <Route path="tasks" element={<Tasks />} />
           </Route>

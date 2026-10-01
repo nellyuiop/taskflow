@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import axios from "axios";
-import "./Tasks.css"; // Use the same CSS as Projects
+import "./Tasks.css";
 
 function Tasks() {
   const [tasks, setTasks] = useState([]);
-  const [projects, setProjects] = useState([]); // We need this for the dropdown
+  const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -16,13 +17,15 @@ function Tasks() {
   const [formError, setFormError] = useState("");
   const [editingId, setEditingId] = useState(null);
 
+  const [searchParams] = useSearchParams();
+  const filterProjectId = searchParams.get("projectId");
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
-        // Fetch both tasks and projects (so we can display the project name and populate the dropdown)
         const [tasksRes, projectsRes] = await Promise.all([
           axios.get("http://127.0.0.1:5001/api/tasks", config),
           axios.get("http://127.0.0.1:5001/api/projects", config),
@@ -63,7 +66,12 @@ function Tasks() {
       }
       closeForm();
     } catch (err) {
-      setFormError(err.response?.data?.message || "Action failed.");
+      if (err.response?.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+      } else {
+        setFormError(err.response?.data?.message || "Action failed.");
+      }
     }
   };
 
@@ -99,19 +107,26 @@ function Tasks() {
     setFormError("");
   };
 
-  // Helper to find the project name for a specific task
   const getProjectName = (id) => {
     const project = projects.find((p) => p._id === id);
     return project ? project.name : "Unknown Project";
   };
 
-  if (loading) return <p style={{ padding: "40px" }}>Loading tasks...</p>;
-  if (error) return <p style={{ padding: "40px", color: "red" }}>{error}</p>;
+  if (loading) return <div className="spinner"></div>;
+  if (error) return <div className="error-message">{error}</div>;
+
+  const displayedTasks = filterProjectId
+    ? tasks.filter((t) => t.projectId === filterProjectId)
+    : tasks;
+
+  const currentProjectName = filterProjectId
+    ? projects.find((p) => p._id === filterProjectId)?.name
+    : "All";
 
   return (
     <div>
       <div className="page-header">
-        <h2>Tasks Management</h2>
+        <h2>Tasks for: {currentProjectName || "Loading..."}</h2>
         <button
           className={showForm ? "btn-secondary" : "btn-primary"}
           onClick={() => (showForm ? closeForm() : setShowForm(true))}
@@ -147,17 +162,14 @@ function Tasks() {
                 required
               />
             </div>
+
+            {/* STYLED DROPDOWNS */}
             <div className="input-group">
               <label>Status</label>
               <select
+                className="custom-select"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  borderRadius: "8px",
-                  border: "1px solid #d1d5db",
-                }}
               >
                 <option value="Todo">Todo</option>
                 <option value="In Progress">In Progress</option>
@@ -167,15 +179,10 @@ function Tasks() {
             <div className="input-group">
               <label>Assign to Project</label>
               <select
+                className="custom-select"
                 value={projectId}
                 onChange={(e) => setProjectId(e.target.value)}
                 required
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  borderRadius: "8px",
-                  border: "1px solid #d1d5db",
-                }}
               >
                 <option value="">-- Select a Project --</option>
                 {projects.map((p) => (
@@ -185,6 +192,7 @@ function Tasks() {
                 ))}
               </select>
             </div>
+
             <button type="submit" className="btn-primary">
               {editingId ? "Update Task" : "Save Task"}
             </button>
@@ -203,7 +211,7 @@ function Tasks() {
             </tr>
           </thead>
           <tbody>
-            {tasks.map((task) => (
+            {displayedTasks.map((task) => (
               <tr key={task._id}>
                 <td style={{ fontWeight: "500", color: "#111827" }}>
                   {task.title}
@@ -234,27 +242,27 @@ function Tasks() {
                   </span>
                 </td>
                 <td>
-                  <button
-                    className="btn-action btn-edit"
-                    onClick={() => handleEditClick(task)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="btn-action btn-delete"
-                    onClick={() => handleDelete(task._id)}
-                  >
-                    Delete
-                  </button>
+                  <div className="action-buttons">
+                    <button
+                      className="btn-action btn-edit"
+                      onClick={() => handleEditClick(task)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="btn-action btn-delete"
+                      onClick={() => handleDelete(task._id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {tasks.length === 0 && (
-          <div className="empty-state">
-            No tasks found. Create one to get started!
-          </div>
+        {displayedTasks.length === 0 && (
+          <div className="empty-state">No tasks found for this project.</div>
         )}
       </div>
     </div>

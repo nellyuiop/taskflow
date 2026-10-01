@@ -69,3 +69,17 @@ A complete Postman collection containing all API requests (with authentication s
 ## Database Schema
 
 The database schema diagram for this project is available in the `docs` folder.
+
+## 🖥️ Week 2 - Admin CMS (React)
+
+A React-based admin panel to manage the TaskFlow backend.
+
+- Location: `/admin` folder
+- Features: JWT Login, Protected Routes, Dashboard stats, Full CRUD for Projects & Tasks.
+- Tech Stack: React (Vite), React Router, Axios, Custom CSS.
+- How to Run:
+  ```bash
+  cd admin
+  npm install
+  npm run dev
+  ```

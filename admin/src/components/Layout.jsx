@@ -3,79 +3,48 @@ import "./Layout.css";
 
 function Layout() {
   const navigate = useNavigate();
-
   const handleLogout = () => {
-    localStorage.removeItem("token"); // Delete the token
-    navigate("/login"); // Send them back to login
+    localStorage.removeItem("token");
+    navigate("/login", { replace: true });
   };
 
   return (
-    <div className="layout-container">
-      <div className="sidebar">
-        <h2>TaskFlow Admin</h2>
-        <nav
-          style={{
-            marginTop: "30px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px",
-          }}
-        >
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link"
-            }
-          >
-            Dashboard
-          </NavLink>
-
+    <div className="app-container">
+      <a className="tf-skip-link" href="#taskflow-main">
+        Skip to content
+      </a>
+      <header className="topbar">
+        <div className="tf-topbar-inner">
           <NavLink
             to="/projects"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link"
-            }
+            className="tf-brand"
+            aria-label="TaskFlow projects"
           >
-            Projects
+            <span className="tf-brand-mark" aria-hidden="true">
+              T
+            </span>
+            <span>
+              TaskFlow <span className="tf-admin-label">Admin</span>
+            </span>
           </NavLink>
-
-          <NavLink
-            to="/tasks"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link"
-            }
-          >
-            Tasks
-          </NavLink>
-
-          {/* LOGOUT BUTTON */}
-          <button
-            onClick={handleLogout}
-            style={{
-              marginTop: "20px",
-              padding: "10px",
-              background: "#ef4444",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontWeight: "bold",
-            }}
-          >
-            Logout
-          </button>
-        </nav>
-      </div>
-
-      <div className="main-area">
-        <div className="topbar">
-          <strong>Admin Panel</strong>
+          <nav className="topbar-nav" aria-label="Main navigation">
+            <NavLink
+              to="/projects"
+              className={({ isActive }) =>
+                isActive ? "nav-link active" : "nav-link"
+              }
+            >
+              Projects
+            </NavLink>
+            <button type="button" onClick={handleLogout} className="logout-btn">
+              Logout
+            </button>
+          </nav>
         </div>
-
-        <div className="content">
-          <Outlet />
-        </div>
-      </div>
+      </header>
+      <main id="taskflow-main" className="main-content" tabIndex={-1}>
+        <Outlet />
+      </main>
     </div>
   );
 }
