@@ -4,8 +4,9 @@ import dotenv from "dotenv";
 import cors from "cors";
 import projectRoutes from "./routes/projectRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
-import authRoutes from "./routes/authRoutes.js"; // NEW
-import { protect } from "./middleware/authMiddleware.js"; // NEW
+import authRoutes from "./routes/authRoutes.js";
+import publicRoutes from "./routes/publicRoutes.js"; // <-- NEW
+import { protect } from "./middleware/authMiddleware.js";
 
 dotenv.config();
 const app = express();
@@ -13,16 +14,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Debug logger
 app.use((req, res, next) => {
   console.log(`Incoming request: ${req.method} ${req.url}`);
   next();
 });
 
-// --- ROUTES ---
-app.use("/api/auth", authRoutes); // NEW
-app.use("/api/projects", protect, projectRoutes); // ADDED "protect"
-app.use("/api", protect, taskRoutes); // ADDED "protect"
+// --- PUBLIC ROUTES (No token required) ---
+app.use("/api/public", publicRoutes); // <-- NEW
+
+// --- PROTECTED ROUTES (Token required) ---
+app.use("/api/auth", authRoutes);
+app.use("/api/projects", protect, projectRoutes);
+app.use("/api", protect, taskRoutes);
 
 app.get("/", (req, res) => {
   res.send("TaskFlow API is running!");
