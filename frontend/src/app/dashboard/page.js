@@ -1,4 +1,5 @@
 import Navbar from "../../components/Navbar";
+import Link from "next/link";
 
 async function getData() {
   const [projectsRes, tasksRes] = await Promise.all([
@@ -54,9 +55,10 @@ export default async function DashboardPage() {
                 : 0;
 
             return (
-              <div
+              <Link
                 key={project._id}
-                className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"
+                href={`/dashboard/projects/${project._id}`}
+                className="block bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-lg hover:-translate-y-1 hover:border-slate-300 transition-all duration-200"
               >
                 {/* Project Header */}
                 <div className="p-6 border-b border-slate-100">
@@ -70,10 +72,13 @@ export default async function DashboardPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className="text-sm font-semibold text-slate-700">
+                      <div className="flex items-center gap-2 text-slate-500 text-sm font-medium justify-end">
+                        View Details <span className="text-lg">→</span>
+                      </div>
+                      <span className="text-sm font-semibold text-slate-700 mt-2 block">
                         {doneCount} / {projectTasks.length} Tasks
                       </span>
-                      <div className="w-32 h-2 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                      <div className="w-32 h-2 bg-slate-100 rounded-full mt-2 overflow-hidden ml-auto">
                         <div
                           className="h-full bg-slate-700 transition-all duration-500"
                           style={{ width: `${progress}%` }}
@@ -83,7 +88,7 @@ export default async function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Tasks List */}
+                {/* Tasks Preview */}
                 <div className="bg-slate-50 p-6">
                   {projectTasks.length === 0 ? (
                     <p className="text-slate-500 text-sm italic">
@@ -91,7 +96,7 @@ export default async function DashboardPage() {
                     </p>
                   ) : (
                     <ul className="space-y-3">
-                      {projectTasks.map((task) => (
+                      {projectTasks.slice(0, 3).map((task) => (
                         <li
                           key={task._id}
                           className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200"
@@ -115,10 +120,16 @@ export default async function DashboardPage() {
                           </span>
                         </li>
                       ))}
+                      {projectTasks.length > 3 && (
+                        <li className="text-sm text-slate-500 italic text-center pt-2">
+                          + {projectTasks.length - 3} more tasks — click to view
+                          all
+                        </li>
+                      )}
                     </ul>
                   )}
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
