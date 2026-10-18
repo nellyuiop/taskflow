@@ -1,4 +1,5 @@
 import Project from "../models/Project.js";
+import Task from "../models/Task.js";
 
 // @desc    Get all projects
 // @route   GET /api/projects
@@ -37,13 +38,25 @@ export const updateProject = async (req, res) => {
   }
 };
 
-// @desc    Delete a project
+// @desc    Delete a project and all its tasks
 // @route   DELETE /api/projects/:id
 export const deleteProject = async (req, res) => {
   try {
-    const project = await Project.findByIdAndDelete(req.params.id);
-    if (!project) return res.status(404).json({ message: "Project not found" });
-    res.status(200).json({ message: "Project deleted successfully" });
+    const project = await Project.findById(req.params.id);
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    // 1. Delete all tasks that belong to this project
+    await Task.deleteMany({ projectId: req.params.id });
+
+    // 2. Delete the project itself
+    await Project.findByIdAndDelete(req.params.id);
+
+    res
+      .status(200)
+      .json({ message: "Project and associated tasks deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
   }

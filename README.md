@@ -86,4 +86,4 @@ A React-based admin panel to manage the TaskFlow backend.
 
 ## - Integration & Deployment
 
-- **Day 1:** End-to-end integration testing completed successfully. The API, Admin CMS, and Public Next.js frontend are communicating correctly.
+-End-to-end integration testing completed successfully. The API, Admin CMS, and Public Next.js frontend are communicating correctly.
