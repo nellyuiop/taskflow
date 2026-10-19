@@ -3,8 +3,12 @@ import Link from "next/link";
 
 async function getData() {
   const [projectsRes, tasksRes] = await Promise.all([
-    fetch("http://127.0.0.1:5001/api/public/projects", { cache: "no-store" }),
-    fetch("http://127.0.0.1:5001/api/public/tasks", { cache: "no-store" }),
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/public/projects`, {
+      cache: "no-store",
+    }),
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/public/tasks`, {
+      cache: "no-store",
+    }),
   ]);
 
   if (!projectsRes.ok || !tasksRes.ok) {

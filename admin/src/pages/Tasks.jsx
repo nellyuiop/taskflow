@@ -27,8 +27,8 @@ function Tasks() {
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
         const [tasksRes, projectsRes] = await Promise.all([
-          axios.get("http://127.0.0.1:5001/api/tasks", config),
-          axios.get("http://127.0.0.1:5001/api/projects", config),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/tasks`, config),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/projects`, config),
         ]);
 
         setTasks(tasksRes.data);
@@ -51,14 +51,14 @@ function Tasks() {
 
       if (editingId) {
         const response = await axios.put(
-          `http://127.0.0.1:5001/api/tasks/${editingId}`,
+          `${import.meta.env.VITE_API_URL}/api/tasks/${editingId}`,
           { title, description, status, projectId },
           config,
         );
         setTasks(tasks.map((t) => (t._id === editingId ? response.data : t)));
       } else {
         const response = await axios.post(
-          "http://127.0.0.1:5001/api/tasks",
+          `${import.meta.env.VITE_API_URL}/api/tasks`,
           { title, description, status, projectId },
           config,
         );
@@ -88,7 +88,7 @@ function Tasks() {
     if (!window.confirm("Are you sure you want to delete this task?")) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://127.0.0.1:5001/api/tasks/${id}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/tasks/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTasks(tasks.filter((t) => t._id !== id));
@@ -162,8 +162,6 @@ function Tasks() {
                 required
               />
             </div>
-
-            {/* STYLED DROPDOWNS */}
             <div className="input-group">
               <label>Status</label>
               <select
@@ -192,7 +190,6 @@ function Tasks() {
                 ))}
               </select>
             </div>
-
             <button type="submit" className="btn-primary">
               {editingId ? "Update Task" : "Save Task"}
             </button>

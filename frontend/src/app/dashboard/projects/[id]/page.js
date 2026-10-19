@@ -5,10 +5,12 @@ import { notFound } from "next/navigation";
 async function getProjectData(id) {
   try {
     const [projectRes, tasksRes] = await Promise.all([
-      fetch(`http://127.0.0.1:5001/api/public/projects/${id}`, {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/public/projects/${id}`, {
         cache: "no-store",
       }),
-      fetch(`http://127.0.0.1:5001/api/public/tasks`, { cache: "no-store" }),
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/public/tasks`, {
+        cache: "no-store",
+      }),
     ]);
 
     if (!projectRes.ok) return null;
