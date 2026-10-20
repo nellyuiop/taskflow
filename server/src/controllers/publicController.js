@@ -16,7 +16,9 @@ export const getPublicProjects = async (req, res) => {
 // @route   GET /api/public/tasks
 export const getPublicTasks = async (req, res) => {
   try {
-    const tasks = await Task.find().select("title status projectId");
+    const tasks = await Task.find().select(
+      "title description status projectId",
+    );
     res.status(200).json(tasks);
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
