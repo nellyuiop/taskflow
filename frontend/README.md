@@ -34,22 +34,3 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## 🌐 Week 3 - Public Frontend (Next.js)
-
-A public-facing website built with Next.js that displays all projects and tasks.
-
-- **Location:** `/frontend` folder
-- **Features:** Responsive landing page, public dashboard, dynamic project detail pages, mobile navigation.
-- **Tech Stack:** Next.js (App Router), Tailwind CSS.
-- **How to Run:**
-  ```bash
-  cd frontend
-  npm install
-  npm run dev
-  ```
-  Public Routes:
-
-/ — Landing page
-/dashboard — Public dashboard (all projects)
-/dashboard/projects/[id] — Individual project detail page

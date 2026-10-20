@@ -2,107 +2,85 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-
+  const pathname = usePathname();
+  const closeMenu = () => setIsOpen(false);
+  const links = (mobile = false) => (
+    <>
+      <Link
+        href="/"
+        onClick={closeMenu}
+        aria-current={pathname === "/" ? "page" : undefined}
+      >
+        Home
+      </Link>
+      <Link
+        href="/dashboard"
+        onClick={closeMenu}
+        aria-current={pathname?.startsWith("/dashboard") ? "page" : undefined}
+      >
+        Dashboard
+      </Link>
+      <a
+        href="https://taskflow-jade-beta-13.vercel.app/login"
+        onClick={mobile ? closeMenu : undefined}
+        className="tf-nav-admin"
+      >
+        Admin Panel
+      </a>
+    </>
+  );
   return (
-    <nav className="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <Link
-            href="/"
-            className="text-2xl font-bold text-white tracking-tight"
+    <nav
+      className="tf-site-nav"
+      aria-label="Main navigation"
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && isOpen) {
+          setIsOpen(false);
+          event.currentTarget.querySelector("button")?.focus();
+        }
+      }}
+    >
+      <div className="tf-nav-inner">
+        <Link href="/" className="tf-site-brand" onClick={closeMenu}>
+          TaskFlow
+        </Link>
+        <div className="tf-desktop-links">{links()}</div>
+        <button
+          type="button"
+          className="tf-menu-toggle"
+          onClick={() => setIsOpen((open) => !open)}
+          aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={isOpen}
+          aria-controls="tf-mobile-navigation"
+        >
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            aria-hidden="true"
+            focusable="false"
           >
-            TaskFlow
-          </Link>
-
-          {/* Desktop links - hidden on mobile */}
-          <div className="hidden md:flex items-center gap-6">
-            <Link
-              href="/"
-              className="text-slate-300 hover:text-white font-medium transition"
-            >
-              Home
-            </Link>
-            <Link
-              href="/dashboard"
-              className="text-slate-300 hover:text-white font-medium transition"
-            >
-              Dashboard
-            </Link>
-            <a
-              href="http://localhost:5173"
-              className="px-4 py-2 bg-slate-700 text-white rounded-lg font-medium hover:bg-slate-600 transition"
-            >
-              Admin Panel
-            </a>
-          </div>
-
-          {/* Hamburger button - only on mobile */}
-          <button
-            className="md:hidden text-slate-300 hover:text-white p-2 rounded-lg hover:bg-slate-700 transition"
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle menu"
-          >
-            {isOpen ? (
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            ) : (
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            )}
-          </button>
-        </div>
+            <path
+              d={isOpen ? "m6 6 12 12M6 18 18 6" : "M4 6h16M4 12h16M4 18h16"}
+            />
+          </svg>
+        </button>
       </div>
-
-      {/* Mobile dropdown */}
-      {isOpen && (
-        <div className="md:hidden bg-slate-800 border-t border-slate-700">
-          <div className="px-4 py-4 space-y-2">
-            <Link
-              href="/"
-              className="block px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition"
-            >
-              Home
-            </Link>
-            <Link
-              href="/dashboard"
-              className="block px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition"
-            >
-              Dashboard
-            </Link>
-            <a
-              href="http://localhost:5173"
-              className="block px-4 py-3 bg-slate-700 text-white rounded-lg font-medium hover:bg-slate-600 transition text-center"
-            >
-              Admin Panel
-            </a>
-          </div>
-        </div>
-      )}
+      <div
+        id="tf-mobile-navigation"
+        className="tf-mobile-links"
+        hidden={!isOpen}
+      >
+        {links(true)}
+      </div>
     </nav>
   );
 }

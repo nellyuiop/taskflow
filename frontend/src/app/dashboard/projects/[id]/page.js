@@ -1,116 +1,172 @@
-import Navbar from "../../../../components/Navbar";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Navbar from "../../../../components/Navbar";
 
 async function getProjectData(id) {
-  try {
-    const [projectRes, tasksRes] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/public/projects/${id}`, {
-        cache: "no-store",
-      }),
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/public/tasks`, {
-        cache: "no-store",
-      }),
-    ]);
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
 
-    if (!projectRes.ok) return null;
-
-    const project = await projectRes.json();
-    const allTasks = await tasksRes.json();
-    const tasks = allTasks.filter((t) => t.projectId === id);
-
-    return { project, tasks };
-  } catch (err) {
-    return null;
+  if (!apiUrl) {
+    throw new Error("API URL is not configured.");
   }
+
+  const [projectRes, tasksRes] = await Promise.all([
+    fetch(`${apiUrl}/api/public/projects/${encodeURIComponent(id)}`, {
+      cache: "no-store",
+    }),
+    fetch(`${apiUrl}/api/public/tasks`, {
+      cache: "no-store",
+    }),
+  ]);
+
+  if (projectRes.status === 404) return null;
+
+  if (!projectRes.ok || !tasksRes.ok) {
+    throw new Error("Unable to load project.");
+  }
+
+  const [project, allTasks] = await Promise.all([
+    projectRes.json(),
+    tasksRes.json(),
+  ]);
+
+  if (!Array.isArray(allTasks)) {
+    throw new Error("Unexpected response.");
+  }
+
+  const tasks = allTasks.filter(
+    (task) => String(task.projectId?._id ?? task.projectId) === String(id),
+  );
+
+  return { project, tasks };
+}
+
+function statusClass(status) {
+  if (status === "Done") return "tf-status-done";
+  if (status === "In Progress") return "tf-status-progress";
+  return "tf-status-todo";
 }
 
 export default async function ProjectDetailPage({ params }) {
-  // In Next.js 15+, params is a Promise, so we await it
   const { id } = await params;
-  const data = await getProjectData(id);
+  let data;
 
-  if (!data) {
-    notFound(); // Shows the default 404 page
+  try {
+    data = await getProjectData(id);
+  } catch {
+    return (
+      <div className="tf-page-shell">
+        <Navbar />
+        <main className="tf-workspace">
+          <div className="tf-feedback" role="alert">
+            <h1>Unable to load this project</h1>
+            <p>Please try again in a moment.</p>
+            <Link href="/dashboard" className="tf-dashboard-button">
+              Back to projects
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
   }
 
+  if (!data) notFound();
+
   const { project, tasks } = data;
-  const doneCount = tasks.filter((t) => t.status === "Done").length;
-  const progress = tasks.length > 0 ? (doneCount / tasks.length) * 100 : 0;
+  const doneCount = tasks.filter((task) => task.status === "Done").length;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="tf-page-shell">
       <Navbar />
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* Back Link */}
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center text-slate-500 hover:text-slate-800 font-medium mb-8 transition"
-        >
-          ← Back to Dashboard
+      <main className="tf-workspace tf-project-workspace">
+        <Link href="/dashboard" className="tf-back-link">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M19 12H5m5-5-5 5 5 5" />
+          </svg>
+          All projects
         </Link>
 
-        {/* Project Header */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-8">
-          <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight">
-            {project.name}
-          </h1>
-          <p className="mt-3 text-lg text-slate-600">{project.description}</p>
+        <header className="tf-project-overview">
+          <h1>{project.name}</h1>
+          <p>{project.description || "No description provided."}</p>
 
-          <div className="mt-6 pt-6 border-t border-slate-100 flex items-center justify-between">
-            <span className="text-sm font-semibold text-slate-700">
+          <div className="tf-project-progress">
+            <span>
               {doneCount} of {tasks.length} tasks completed
             </span>
-            <div className="w-48 h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-slate-700 transition-all duration-500"
-                style={{ width: `${progress}%` }}
-              ></div>
-            </div>
-          </div>
-        </div>
 
-        {/* Tasks Section */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-          <h2 className="text-2xl font-bold text-slate-800 mb-6">All Tasks</h2>
+            <progress
+              className="tf-progress"
+              value={doneCount}
+              max={tasks.length || 1}
+              aria-label={`${doneCount} of ${tasks.length} tasks completed`}
+            />
+          </div>
+        </header>
+
+        <section className="tf-task-panel" aria-labelledby="task-heading">
+          <div className="tf-task-panel-heading">
+            <h2 id="task-heading">Tasks</h2>
+            <span className="tf-counter">{tasks.length}</span>
+          </div>
 
           {tasks.length === 0 ? (
-            <p className="text-slate-500 italic">
-              No tasks have been added to this project yet.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {tasks.map((task) => (
-                <div
-                  key={task._id}
-                  className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:bg-slate-50 transition"
-                >
-                  <div className="flex items-center gap-4">
-                    <span
-                      className={`w-3 h-3 rounded-full ${
-                        task.status === "Done"
-                          ? "bg-green-500"
-                          : task.status === "In Progress"
-                            ? "bg-yellow-500"
-                            : "bg-slate-400"
-                      }`}
-                    ></span>
-                    <div>
-                      <p className="font-medium text-slate-700">{task.title}</p>
-                      <p className="text-sm text-slate-500">
-                        {task.description}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide px-3 py-1 bg-slate-100 rounded-full">
-                    {task.status}
-                  </span>
-                </div>
-              ))}
+            <div className="tf-empty">
+              <p>No tasks have been added to this project yet.</p>
             </div>
+          ) : (
+            <>
+              <p className="tf-task-hint">Select a task to view its details.</p>
+
+              {tasks.map((task) => (
+                <details className="tf-task" key={task._id}>
+                  <summary>
+                    <span
+                      className={`tf-task-dot ${statusClass(task.status)}`}
+                      aria-hidden="true"
+                    />
+
+                    <span className="tf-task-title">{task.title}</span>
+
+                    <span className={`tf-status ${statusClass(task.status)}`}>
+                      {task.status}
+                    </span>
+
+                    <svg
+                      className="tf-task-chevron"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </summary>
+
+                  <div className="tf-task-details">
+                    <h3>Description</h3>
+                    <p>{task.description || "No description provided."}</p>
+                  </div>
+                </details>
+              ))}
+            </>
           )}
-        </div>
+        </section>
       </main>
     </div>
   );

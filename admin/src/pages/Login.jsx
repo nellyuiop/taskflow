@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
@@ -9,77 +9,138 @@ function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const submitting = useRef(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (submitting.current) return;
+
     setError("");
 
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/login`,
-        {
-          email,
-          password,
-        },
-      );
+    const apiUrl = import.meta.env.VITE_API_URL?.replace(/\/+$/, "");
 
-      localStorage.setItem("token", response.data.token);
-      navigate("/projects");
+    if (!apiUrl) {
+      setError("The login service is not configured. Please contact support.");
+      return;
+    }
+
+    submitting.current = true;
+    setLoading(true);
+
+    try {
+      const response = await axios.post(`${apiUrl}/api/auth/login`, {
+        email: email.trim(),
+        password,
+      });
+
+      const token = response.data?.token;
+
+      if (typeof token !== "string" || !token) {
+        setError("Unable to complete sign-in. Please try again.");
+        return;
+      }
+
+      localStorage.setItem("token", token);
+      navigate("/projects", { replace: true });
     } catch (err) {
-      if (err.response?.status === 401) {
+      const status = err.response?.status;
+
+      if (status === 401) {
         localStorage.removeItem("token");
-        window.location.href = "/login";
-      } else {
+        setError("Incorrect email or password. Please try again.");
+      } else if (status === 429) {
+        setError("Too many login attempts. Please wait and try again.");
+      } else if (!err.response) {
         setError(
-          err.response?.data?.message || "Login failed. Please try again.",
+          "Unable to reach the login service. Check your connection and try again.",
         );
+      } else {
+        setError("Unable to sign in right now. Please try again.");
       }
     } finally {
+      submitting.current = false;
       setLoading(false);
     }
   };
 
   return (
-    <div className="login-container">
-      <form className="login-form" onSubmit={handleSubmit}>
-        <h2>TaskFlow Admin Login</h2>
-
-        {error && (
-          <p
-            style={{ color: "red", textAlign: "center", marginBottom: "15px" }}
-          >
-            {error}
-          </p>
-        )}
-
-        <div className="input-group">
-          <label>Email Address</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="admin@taskflow.com"
-            required
-          />
+    <div className="login-wrapper">
+      <div className="fake-dashboard" aria-hidden="true">
+        <div className="fake-topbar">
+          <span>TaskFlow Admin</span>
         </div>
 
-        <div className="input-group">
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-          />
+        <div className="fake-content">
+          {[1, 2, 3].map((item) => (
+            <div className="fake-card" key={item}>
+              <div className="fake-card-heading" />
+              <div className="fake-card-line" />
+              <div className="fake-card-line short" />
+            </div>
+          ))}
         </div>
+      </div>
 
-        <button type="submit" className="login-btn" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+      <div className="blur-overlay" aria-hidden="true" />
+
+      <main className="login-form-container">
+        <form
+          onSubmit={handleSubmit}
+          className="glass-form"
+          aria-labelledby="login-title"
+          aria-busy={loading}
+        >
+          <div className="login-heading">
+            <span className="login-eyebrow">YOUR WORKSPACE</span>
+            <h1 id="login-title">TaskFlow Admin</h1>
+            <p>Welcome back. Sign in to continue.</p>
+          </div>
+
+          {error && (
+            <p id="login-error" className="error-text" role="alert">
+              {error}
+            </p>
+          )}
+
+          <div className="login-field">
+            <label htmlFor="login-email">Email address</label>
+            <input
+              id="login-email"
+              name="email"
+              type="email"
+              autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="admin@taskflow.com"
+              aria-describedby={error ? "login-error" : undefined}
+              required
+            />
+          </div>
+
+          <div className="login-field">
+            <label htmlFor="login-password">Password</label>
+            <input
+              id="login-password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Enter your password"
+              aria-describedby={error ? "login-error" : undefined}
+              required
+            />
+          </div>
+
+          <button type="submit" disabled={loading} className="login-btn">
+            {loading ? "Signing in..." : "Sign in"}
+          </button>
+        </form>
+      </main>
     </div>
   );
 }

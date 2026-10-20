@@ -1,235 +1,39 @@
-/* =========================================
-   PAGE HEADER
-   ========================================= */
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-}
+@import "./Projects.css";
 
-.page-header h2 {
-  font-size: 1.8rem;
-  color: #374762;
-  margin: 0;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-}
-
-/* =========================================
-   BUTTONS
-   ========================================= */
-.btn-primary {
-  padding: 10px 20px;
-  background-color: #374762;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.btn-primary:hover {
-  background-color: #27364a;
-  transform: translateY(-1px);
-}
-
-.btn-secondary {
-  padding: 10px 20px;
-  background-color: #e5e7eb;
-  color: #374762;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-secondary:hover {
-  background-color: #d1d5db;
-}
-
-/* =========================================
-   FORM CARD
-   ========================================= */
-.form-card {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  margin-bottom: 30px;
-  border: 1px solid #e5e7eb;
-}
-
-.form-card h3 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  color: #6f84b0;
-  font-weight: 600;
-}
-
-.input-group {
-  margin-bottom: 20px;
-}
-
-.input-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  color: #374762;
-  font-size: 0.9rem;
-}
-
-.input-group input,
-.input-group textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-family: inherit;
-  font-size: 0.95rem;
-  outline: none;
-  transition: all 0.2s;
-  background-color: #f9fafb;
-}
-
-.input-group input:focus,
-.input-group textarea:focus {
-  border-color: #6f84b0;
-  background-color: white;
-  box-shadow: 0 0 0 3px rgba(111, 132, 176, 0.15);
-}
-
-/* =========================================
-   TABLE CARD
-   ========================================= */
-.table-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
-  overflow: hidden;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-thead {
-  background-color: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-th {
-  padding: 16px 24px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-td {
-  padding: 16px 24px;
-  border-bottom: 1px solid #f1f5f9;
-  color: #334155;
-  font-size: 0.95rem;
-  vertical-align: middle; /* Aligns everything perfectly */
-}
-
-tbody tr:hover {
-  background-color: #f8fafc;
-}
-
-/* =========================================
-   ACTION BUTTONS (The Fix)
-   ========================================= */
-.action-buttons {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  white-space: nowrap; /* Prevents wrapping */
-}
-
-.btn-action {
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s ease;
+.app-container .main-content .status-badge {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 7px;
+  padding: 5px 9px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-.btn-view {
-  background-color: #6f84b0;
-  color: white;
-}
-.btn-view:hover {
-  background-color: #5a6e96;
-}
-
-.btn-edit {
-  background-color: #c7d7fe;
-  color: #1e3a8a;
-}
-.btn-edit:hover {
-  background-color: #a5c0fd;
-}
-
-.btn-delete {
-  background-color: #e8c4c4;
-  color: #b91c1c;
-}
-.btn-delete:hover {
-  background-color: #f6bcbc;
-}
-
-/* =========================================
-   EMPTY STATE, LOADING & ERRORS
-   ========================================= */
-.empty-state {
-  padding: 40px;
-  text-align: center;
-  color: #6b7280;
-  font-size: 0.95rem;
-}
-
-.spinner {
-  border: 4px solid #f3f4f6;
-  border-top: 4px solid #6f84b0;
+.app-container .main-content .status-badge::before {
+  content: "";
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-  margin: 40px auto;
+  background: currentColor;
 }
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+.app-container .main-content .status-todo {
+  border-color: #dce4ee;
+  background: #edf2f8;
+  color: #64748b;
 }
 
-.error-message {
-  background-color: #fee2e2;
-  color: #b91c1c;
-  padding: 15px;
-  border-radius: 8px;
-  margin-top: 20px;
-  font-weight: 500;
-  text-align: center;
-  border: 1px solid #fecaca;
+.app-container .main-content .status-progress {
+  border-color: #f0dfb7;
+  background: #fff4df;
+  color: #8c651b;
+}
+
+.app-container .main-content .status-done {
+  border-color: #cce7db;
+  background: #eaf6f0;
+  color: #28704d;
 }

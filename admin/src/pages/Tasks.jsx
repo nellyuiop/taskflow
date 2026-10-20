@@ -3,6 +3,40 @@ import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import "./Tasks.css";
 
+// Small outline icons; no additional package required.
+function Icon({ name, size = 18 }) {
+  const paths = {
+    folder:
+      "M3 7V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z",
+    tasks: "m3 6 2 2 4-4M12 6h9M3 13l2 2 4-4M12 13h9M12 20h9",
+    progress: "M4 19V5M4 19h16M8 15l4-4 4 2 5-8M17 5h4v4",
+    plus: "M12 5v14M5 12h14",
+    edit: "m15 5 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15v5Z",
+    trash: "M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6",
+    arrow: "M5 12h14m-5-5 5 5-5 5",
+    close: "m6 6 12 12M6 18 18 6",
+    logout: "M9 4H4v16h5M9 12h12m-5-5 5 5-5 5",
+    shield: "M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6l-8-3Zm-4 9 3 3 5-6",
+  };
+  return (
+    <svg
+      className="tf-icon"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d={paths[name]} />
+    </svg>
+  );
+}
+
 function Tasks() {
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -124,14 +158,24 @@ function Tasks() {
     : "All";
 
   return (
-    <div>
+    <div className="admin-page">
       <div className="page-header">
-        <h2>Tasks for: {currentProjectName || "Loading..."}</h2>
+        <div>
+          <h2>
+            {filterProjectId
+              ? `Tasks for: ${currentProjectName || "Project"}`
+              : "All tasks"}
+          </h2>
+          <p className="page-description">
+            Organize the details and track what comes next.
+          </p>
+        </div>
         <button
           className={showForm ? "btn-secondary" : "btn-primary"}
           onClick={() => (showForm ? closeForm() : setShowForm(true))}
         >
-          {showForm ? "Cancel" : "+ New Task"}
+          <Icon name={showForm ? "close" : "plus"} size={17} />
+          {showForm ? "Cancel" : "New Task"}
         </button>
       </div>
 
@@ -146,8 +190,9 @@ function Tasks() {
 
           <form onSubmit={handleSubmit}>
             <div className="input-group">
-              <label>Task Title</label>
+              <label htmlFor="task-title">Task Title</label>
               <input
+                id="task-title"
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -155,16 +200,18 @@ function Tasks() {
               />
             </div>
             <div className="input-group">
-              <label>Description</label>
+              <label htmlFor="task-description">Description</label>
               <textarea
+                id="task-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 required
               />
             </div>
             <div className="input-group">
-              <label>Status</label>
+              <label htmlFor="task-status">Status</label>
               <select
+                id="task-status"
                 className="custom-select"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
@@ -175,8 +222,9 @@ function Tasks() {
               </select>
             </div>
             <div className="input-group">
-              <label>Assign to Project</label>
+              <label htmlFor="task-project">Assign to Project</label>
               <select
+                id="task-project"
                 className="custom-select"
                 value={projectId}
                 onChange={(e) => setProjectId(e.target.value)}
@@ -210,30 +258,13 @@ function Tasks() {
           <tbody>
             {displayedTasks.map((task) => (
               <tr key={task._id}>
-                <td style={{ fontWeight: "500", color: "#111827" }}>
+                <td style={{ fontWeight: "600", color: "#172337" }}>
                   {task.title}
                 </td>
                 <td>{getProjectName(task.projectId)}</td>
                 <td>
                   <span
-                    style={{
-                      padding: "4px 8px",
-                      borderRadius: "4px",
-                      fontSize: "0.8rem",
-                      fontWeight: "600",
-                      backgroundColor:
-                        task.status === "Done"
-                          ? "#d1fae5"
-                          : task.status === "In Progress"
-                            ? "#fef3c7"
-                            : "#e5e7eb",
-                      color:
-                        task.status === "Done"
-                          ? "#065f46"
-                          : task.status === "In Progress"
-                            ? "#92400e"
-                            : "#374151",
-                    }}
+                    className={`status-badge ${task.status === "Done" ? "status-done" : task.status === "In Progress" ? "status-progress" : "status-todo"}`}
                   >
                     {task.status}
                   </span>
@@ -244,13 +275,13 @@ function Tasks() {
                       className="btn-action btn-edit"
                       onClick={() => handleEditClick(task)}
                     >
-                      Edit
+                      <Icon name="edit" size={15} /> Edit
                     </button>
                     <button
                       className="btn-action btn-delete"
                       onClick={() => handleDelete(task._id)}
                     >
-                      Delete
+                      <Icon name="trash" size={15} /> Delete
                     </button>
                   </div>
                 </td>
